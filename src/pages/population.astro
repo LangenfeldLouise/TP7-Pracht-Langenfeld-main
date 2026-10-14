@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/Layout.astro";
+import populationMain from "../assets/populationMain.json";
+
+const listePeriode = [...new Set(populationMain.map((d) => d.Période))].reverse();
+const listeSexe = [...new Set(populationMain.map((d) => d.Sexe))];
+const listeAge = [...new Set(populationMain.map((d) => d["Âge"]))];
+---
+
+<Layout title="Population — TP7">
+  <h1 class="mb-4 text-2xl font-bold">Population par département</h1>
+
+  <div class="mb-4 flex flex-wrap gap-4">
+    <label>Année
+      <select id="periode" class="border p-1">
+        {listePeriode.map((p, i) => <option selected={i === 0}>{p}</option>)}
+      </select>
+    </label>
+    <label>Sexe
+      <select id="sexe" class="border p-1">
+        {listeSexe.map((s) => <option selected={s === "Total"}>{s}</option>)}
+      </select>
+    </label>
+    <label>Âge
+      <select id="age" class="border p-1">
+        {listeAge.map((a) => <option selected={a === "Total"}>{a}</option>)}
+      </select>
+    </label>
+  </div>
+
+  <p id="message" role="status"></p>
+  <div id="chart"></div>
+
+  <script>
+    import * as Plot from "@observablehq/plot";
+    import departements from "../assets/departements.geojson.json";
+    import populationMain from "../assets/populationMain.json";
+
+    const elmYear = document.getElementById("periode") as HTMLSelectElement;
+    const elmSex = document.getElementById("sexe") as HTMLSelectElement;
+    const elmAge = document.getElementById("age") as HTMLSelectElement;
+    const chart = document.getElementById("chart") as HTMLElement;
+    const message = document.getElementById("message") as HTMLElement;
+
+    function draw() {
+      const selectedYear = Number(elmYear.value);
+      const selectedSex = elmSex.value;
+      const selectedAge = elmAge.value;
+
+      const trouve = (d: any) =>
+        populationMain.find(
+          (p) =>
+            p.Géographie === d.properties.nom &&
+            p.Période === selectedYear &&
+            p.Sexe === selectedSex &&
+            p["Âge"] === selectedAge,
+        );
+
+      const existe = populationMain.some(
+        (p) =>
+          p.Période === selectedYear &&
+          p.Sexe === selectedSex &&
+          p["Âge"] === selectedAge,
+      );
+      message.textContent = existe ? "" : "Aucune donnée pour cette combinaison.";
+
+      const plot = Plot.plot({
+        title: "Population par département",
+        subtitle: `Année ${selectedYear} — Sexe : ${selectedSex} — Âge : ${selectedAge}`,
+        caption: "Figure 1. Carte de la population par département français.",
+        ariaLabel: "Carte de la population par département français",
+        projection: { type: "mercator", domain: departements as any },
+        color: {
+          type: "quantile",
+          n: 8,
+          scheme: "Greens",
+          label: "Population en centaine de milliers",
+          legend: true,
+          transform: (d: number) => Math.round(d / 100000),
+        },
+        marks: [
+          Plot.geo(departements as any, {
+            fill: (d: any) => trouve(d)?.Valeur,
+            stroke: "#999",
+            title: (d: any) => `${d.properties.nom} : ${trouve(d)?.Valeur ?? "n/d"}`,
+            tip: true,
+          }),
+        ],
+      });
+
+      chart.replaceChildren(plot);
+    }
+
+    [elmYear, elmSex, elmAge].forEach((el) => el.addEventListener("change", draw));
+    draw();
+  </script>
+</Layout>

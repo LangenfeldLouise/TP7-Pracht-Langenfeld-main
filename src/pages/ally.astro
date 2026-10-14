@@ -1,0 +1,47 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PlotFigure from '../components/PlotFigure.astro';
+import * as Plot from "@observablehq/plot";
+import penguins from '../assets/penguins.json';
+---
+
+<Layout>
+  <h1 class="text-2xl font-bold p-4">Accessibilité des graphiques</h1>
+
+  <!-- Exemple 1 : Plot construit lui-même le <figure>/<figcaption> via title, subtitle, caption -->
+  <div class="p-4">
+    <PlotFigure
+      options={{
+        title: "Longueur vs profondeur du bec des manchots",
+        subtitle: "Données Palmer Station, Antarctique",
+        caption: "Figure 1. Chaque point est un manchot, coloré par espèce.",
+        ariaLabel: "Nuage de points : longueur du bec en fonction de la profondeur du bec, pour trois espèces de manchots.",
+        marks: [
+          Plot.dot(penguins, {
+            x: "culmen_length_mm",
+            y: "culmen_depth_mm",
+            fill: "species",
+            tip: true
+          }),
+          Plot.frame()
+        ]
+      }}
+    />
+  </div>
+
+  <!-- Exemple 2 : on fait soi-même le figure/figcaption autour du graphique -->
+  <figure class="p-4">
+    <PlotFigure
+      options={{
+        ariaLabel: "Histogramme de la masse corporelle des manchots, tous sexes et espèces confondus.",
+        marks: [
+          Plot.rectY(penguins, Plot.binX({ y: "count" }, { x: "body_mass_g" })),
+          Plot.frame()
+        ]
+      }}
+    />
+    <figcaption class="text-sm text-gray-600 mt-2">
+      Figure 2. Distribution de la masse corporelle (g) de l'ensemble des manchots.
+    </figcaption>
+  </figure>
+</Layout>

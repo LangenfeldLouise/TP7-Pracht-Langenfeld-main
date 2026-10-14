@@ -1,18 +1,62 @@
 ---
 import "../styles/global.css";
+
+interface Props {
+  title?: string;
+}
+const { title = "TP7 — Pracht Langenfeld" } = Astro.props;
+
+const chemin = Astro.url.pathname.replace(/\/$/, "") || "/";
+const liens = [
+  { href: "/", label: "Accueil" },
+  { href: "/population", label: "Population" },
+  { href: "/etablissements", label: "Établissements" },
+];
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Astro Basics</title>
+    <title>{title}</title>
   </head>
   <body>
-    <slot />
+    <a
+      href="#contenu"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:bg-white focus:p-2"
+    >
+      Aller au contenu
+    </a>
+    <header class="border-b border-slate-200 bg-white shadow-sm">
+      <nav
+        aria-label="Navigation principale"
+        class="mx-auto flex max-w-6xl flex-wrap items-center gap-2 p-4"
+      >
+        <a href="/" class="mr-auto text-lg font-bold text-slate-900">
+          TP7 — Pracht Langenfeld
+        </a>
+        {
+          liens.map((l) => (
+            <a
+              href={l.href}
+              aria-current={chemin === l.href ? "page" : undefined}
+              class:list={[
+                "rounded px-3 py-1 text-slate-900 hover:bg-slate-100",
+                { "bg-slate-200 font-bold underline": chemin === l.href },
+              ]}
+            >
+              {l.label}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+    <main id="contenu" class="mx-auto max-w-6xl p-4">
+      <slot />
+    </main>
   </body>
 </html>
 

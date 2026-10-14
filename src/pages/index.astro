@@ -1,21 +1,35 @@
 ---
-import PlotFigure from "../components/PlotFigure.astro";
 import Layout from "../layouts/Layout.astro";
+import PlotFigure from "../components/PlotFigure.astro";
 import * as Plot from "@observablehq/plot";
 import penguins from "../assets/penguins.json";
+
+const optionPlot = {
+  title: "Dimensions du bec des manchots",
+  subtitle: "Longueur et profondeur du bec (culmen), par espèce",
+  caption:
+    "Figure 1. Nuage de points : longueur du bec en abscisse, profondeur du bec en ordonnée, une couleur et un symbole par espèce. Deux manchots sans mesure ne sont pas représentés.",
+  ariaLabel:
+    "Nuage de points de la profondeur du bec en fonction de sa longueur, pour les espèces Adelie, Chinstrap et Gentoo",
+  grid: true,
+  x: { label: "Longueur du bec (mm)" },
+  y: { label: "Profondeur du bec (mm)" },
+  color: { legend: true, label: "Espèce" },
+  symbol: { legend: true, label: "Espèce" },
+  marks: [
+    Plot.dot(penguins, {
+      x: "culmen_length_mm",
+      y: "culmen_depth_mm",
+      stroke: "species",
+      symbol: "species",
+      title: (d) =>
+        `${d.species}\nLongueur : ${d.culmen_length_mm} mm\nProfondeur : ${d.culmen_depth_mm} mm`,
+    }),
+  ],
+};
 ---
 
-<Layout>
-  <h1 class="text-2xl">Test Astro et Plot (Observablehq)</h1>
-  <PlotFigure
-    options={{
-      marks: [
-        Plot.dot(penguins, {
-          x: "culmen_length_mm",
-          y: "culmen_depth_mm",
-          stroke: "species",
-        }),
-      ],
-    }}
-  />
+<Layout title="Accueil — TP7">
+  <h1 class="mb-4 text-2xl font-bold">Manchots de l'archipel Palmer</h1>
+  <PlotFigure options={optionPlot} />
 </Layout>
